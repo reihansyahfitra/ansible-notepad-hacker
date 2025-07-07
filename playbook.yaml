@@ -1,0 +1,88 @@
+---
+- name: Orkestrasi Otomatisasi GUI Windows
+  hosts: windows
+  gather_facts: no
+
+  tasks:
+    - name: Temukan path python.exe di mesin Windows
+      ansible.windows.win_shell: (Get-Command python.exe).Source
+      register: python_path_result
+      changed_when: false
+
+    - name: Pastikan direktori sementara ada
+      win_file:
+        path: C:\Temp
+        state: directory
+
+    - name: Hapus file penanda dari eksekusi sebelumnya
+      win_file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - C:\Temp\automation_success.txt
+        - C:\Temp\automation_failure.txt
+
+    - name: Instal pustaka pyautogui di Windows
+      c2platform.wincore.win_pip:
+        name: pyautogui
+
+    - name: Instal pustaka pywin32
+      c2platform.wincore.win_pip:
+        name: pywin32
+
+    - name: Salin skrip otomatisasi ke mesin Windows
+      win_copy:
+        src: automate_notepad.py
+        dest: C:\Temp\automate_notepad.py
+
+    - name: (INTI) Buat Tugas Terjadwal untuk menjalankan skrip GUI
+      win_scheduled_task:
+        name: "Run GUI Automation Script"
+        actions:
+          - path: "{{ python_path_result.stdout_lines[0] }}"
+            arguments: C:\Temp\automate_notepad.py
+        triggers:
+          - type: registration # Hanya berjalan saat dipicu
+        principal:
+          logon_type: interactive_token
+          user_id: "{{ ansible_user }}" # Menjalankan sebagai pengguna yang sama dengan koneksi Ansible
+        state: present
+        enabled: yes
+
+    - name: Jalankan Tugas Terjadwal sekarang
+      win_command: schtasks /run /tn "Run GUI Automation Script"
+      async: 1 # Jalankan di latar belakang agar tidak menunggu
+      poll: 0
+
+    - name: Tunggu hingga skrip selesai (dengan memeriksa file penanda)
+      ansible.windows.win_stat:
+        path: C:\Temp\automation_success.txt
+      register: success_file
+      until: success_file.stat.exists
+      retries: 3  # Coba sebanyak 12 kali
+      delay: 10    # Jeda 10 detik antar percobaan (total waktu tunggu 120 detik)
+
+    - name: Periksa apakah ada file kegagalan
+      win_stat:
+        path: C:\Temp\automation_failure.txt
+      register: failure_file
+
+    - name: Baca pesan kegagalan jika ada
+      win_shell: Get-Content C:\Temp\automation_failure.txt
+      register: failure_message
+      when: failure_file.stat.exists
+
+    - name: GAGALKAN playbook jika skrip GUI gagal
+      fail:
+        msg: "Skrip otomatisasi GUI gagal dengan pesan: {{ failure_message.stdout }}"
+      when: failure_file.stat.exists
+
+    - name: Hapus Tugas Terjadwal setelah selesai
+      win_scheduled_task:
+        name: "Run GUI Automation Script"
+        state: absent
+
+    - name: Hapus skrip Python dari mesin Windows
+      ansible.windows.win_file:
+        path: C:\Temp\automate_notepad.py
+        state: absent
