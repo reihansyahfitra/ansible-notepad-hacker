@@ -1,17 +1,12 @@
 import pyautogui
 import time
 import os
-import re # Pastikan 're' sudah diimpor di bagian atas file
+import re
 
 def automate_notepad_safely():
-    """
-    Fungsi ini secara cerdas mencari instance Notepad yang aman,
-    atau membuka yang baru jika tidak ditemukan, lalu melakukan otomatisasi.
-    """
     target_window = None
     found_clean_notepad = False
 
-    # 1. Ambil SEMUA jendela, lalu saring secara manual.
     print("Mencari jendela Notepad...")
     all_windows = pyautogui.getAllWindows()
     pattern = re.compile(r'.*Notepad') # Buat pola regex
@@ -47,7 +42,6 @@ def automate_notepad_safely():
         time.sleep(0.5) # Beri waktu untuk tab baru muncul
 
     # 3. Tunggu secara dinamis hingga jendela target siap.
-    # Ini jauh lebih andal daripada time.sleep()
     timeout = 15  # Tunggu maksimal 15 detik
     start_time = time.time()
     while target_window is None and (time.time() - start_time) < timeout:
@@ -100,9 +94,6 @@ def automate_notepad_safely():
         time.sleep(0.5)
         target_window.close()
 
-# --- BLOK EKSEKUSI UTAMA ---
-# Blok ini tidak perlu diubah. Ia memanggil fungsi di atas
-# dan membuat file penanda untuk Ansible.
 try:
     automate_notepad_safely()
     # Buat file penanda keberhasilan
