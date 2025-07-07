@@ -22,20 +22,20 @@
         - C:\Temp\automation_success.txt
         - C:\Temp\automation_failure.txt
 
-    - name: Instal pustaka pyautogui di Windows
+    - name: Instal library pyautogui di Windows
       c2platform.wincore.win_pip:
         name: pyautogui
 
-    - name: Instal pustaka pywin32
+    - name: Instal library pywin32
       c2platform.wincore.win_pip:
         name: pywin32
 
-    - name: Salin skrip otomatisasi ke mesin Windows
+    - name: Salin script otomatisasi ke mesin Windows
       win_copy:
         src: automate_notepad.py
         dest: C:\Temp\automate_notepad.py
 
-    - name: (INTI) Buat Tugas Terjadwal untuk menjalankan skrip GUI
+    - name: Buat Tugas scheduled task untuk menjalankan script GUI
       win_scheduled_task:
         name: "Run GUI Automation Script"
         actions:
@@ -49,18 +49,18 @@
         state: present
         enabled: yes
 
-    - name: Jalankan Tugas Terjadwal sekarang
+    - name: Jalankan scheduled task sekarang
       win_command: schtasks /run /tn "Run GUI Automation Script"
       async: 1 # Jalankan di latar belakang agar tidak menunggu
       poll: 0
 
-    - name: Tunggu hingga skrip selesai (dengan memeriksa file penanda)
+    - name: Tunggu hingga script selesai (dengan memeriksa file penanda)
       ansible.windows.win_stat:
         path: C:\Temp\automation_success.txt
       register: success_file
       until: success_file.stat.exists
       retries: 3  # Coba sebanyak 12 kali
-      delay: 10    # Jeda 10 detik antar percobaan (total waktu tunggu 120 detik)
+      delay: 10    # Jeda 10 detik antar percobaan
 
     - name: Periksa apakah ada file kegagalan
       win_stat:
@@ -72,17 +72,17 @@
       register: failure_message
       when: failure_file.stat.exists
 
-    - name: GAGALKAN playbook jika skrip GUI gagal
+    - name: GAGALKAN playbook jika script GUI gagal
       fail:
         msg: "Skrip otomatisasi GUI gagal dengan pesan: {{ failure_message.stdout }}"
       when: failure_file.stat.exists
 
-    - name: Hapus Tugas Terjadwal setelah selesai
+    - name: Hapus scheduled task setelah selesai
       win_scheduled_task:
         name: "Run GUI Automation Script"
         state: absent
 
-    - name: Hapus skrip Python dari mesin Windows
+    - name: Hapus script Python dari mesin Windows
       ansible.windows.win_file:
         path: C:\Temp\automate_notepad.py
         state: absent
