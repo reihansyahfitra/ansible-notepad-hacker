@@ -61,7 +61,7 @@ def automate_notepad_safely():
         time.sleep(1) # Beri waktu ekstra jika perlu
 
     # 4. Lakukan otomatisasi seperti biasa
-    pyautogui.write('Otomatisasi GUI ini berjalan dengan skrip yang lebih andal!', interval=0.1)
+    pyautogui.write('Jangan panik ini bukan di-hack!', interval=0.1) # Pesan yang ingin diketik
     time.sleep(1)
 
     # 5. Simpan file
@@ -71,7 +71,7 @@ def automate_notepad_safely():
 
     # Tentukan path desktop dan nama file
     desktop_path = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop')
-    file_name = "hasil_otomatisasi_ansible.txt"
+    file_name = "hasil.txt"
     full_path = os.path.join(desktop_path, file_name)
 
     pyautogui.write(full_path, interval=0.02)
