@@ -9,8 +9,7 @@ Proyek ini dirancang untuk menunjukkan solusi atas tantangan umum, yaitu keterba
 Ansible sendiri tidak dapat mengklik tombol atau berinteraksi dengan jendela aplikasi karena berjalan di sesi non-interaktif (*Session 0*) di Windows. Oleh karena itu, arsitektur yang digunakan adalah:
 
 1.  **Ansible sebagai Orkestrator**: Bertugas untuk mempersiapkan lingkungan, menyalin skrip, dan memicu eksekusi.
-2.  **Python & `pyautogui` sebagai Aktor**: Skrip Python yang melakukan interaksi GUI sebenarnya (mengontrol mouse dan keyboard).
-3.  **PsExec sebagai Peluncur (Launcher)**: `PsExec` digunakan sebagai jembatan untuk meluncurkan skrip Python di sesi desktop pengguna yang aktif dan interaktif, mengatasi batasan dari metode standar seperti *Windows Task Scheduler*.
+2.  **Python & `pyautogui` sebagai Aktor**: Skrip Python yang melakukan interaksi GUI sebenarnya (mengontrol mouse dan keyboard).batasan dari metode standar seperti *Windows Task Scheduler*.
 
 ## Prasyarat
 
@@ -41,9 +40,7 @@ Ansible sendiri tidak dapat mengklik tombol atau berinteraksi dengan jendela apl
 
 1.  **Inventory**: Buka file `inventory` dan pastikan alamat IP atau nama host mesin Windows Anda sudah benar di bawah grup `[windows]`.
 
-2.  **PsExec**: Unduh **PsTools** dari situs resmi Microsoft. Ekstrak dan letakkan file `PsExec64.exe` ke dalam direktori `files/`.
-
-3.  **Variabel Rahasia (Vault)**: Edit file vault untuk menyimpan kredensial login Windows Anda. Jalankan perintah ini dan masukkan username serta password Anda:
+2.  **Variabel Rahasia (Vault)**: Edit file vault untuk menyimpan kredensial login Windows Anda. Jalankan perintah ini dan masukkan username serta password Anda:
     ```bash
     ansible-vault edit group_vars/windows.yml
     ```
@@ -75,4 +72,3 @@ Setelah playbook berjalan, Anda akan melihat urutan kejadian berikut di desktop 
 
 * **FAILED - RETRYING**: Jika *playbook* terus mencoba ulang, pastikan pengguna di mesin Windows sedang dalam keadaan login aktif dan layar tidak terkunci.
 * **Skrip Tidak Berjalan**: Jika otomatisasi GUI tidak muncul, coba jalankan skrip secara manual di mesin Windows (buka `cmd`, `cd C:\Temp`, lalu `python automate_notepad.py`) untuk melihat pesan error yang lebih spesifik.
-* **Diblokir Antivirus**: Beberapa software keamanan mungkin memblokir `PsExec` atau skrip yang mencoba mengontrol mouse/keyboard. Periksa log antivirus jika terjadi kegagalan yang tidak dapat dijelaskan.
